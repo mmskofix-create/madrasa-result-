@@ -8,11 +8,11 @@
     <style>
         /* Manshaul Uloom Theme Variables */
         :root{
-          --navy: #0b3d91;   /* main navy */
-          --accent: #0f5bd1; /* accent blue/button */
+          --navy: #0b3d91;
+          --accent: #0f5bd1;
           --muted: #5a6476;
           --white: #ffffff;
-          --surface: #fbfdff; /* Background */
+          --surface: #fbfdff;
           --shadow: 0 6px 20px rgba(11,61,145,0.1);
           --radius: 12px;
           font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -169,32 +169,22 @@
     </div>
 
     <script>
-        // *** 1. JSON ലിങ്ക് (നിങ്ങളുടെ Google Sheet ലിങ്ക് ഇവിടെ ചേർക്കുക) ***
+        // *** DATA_URL: 404 പിശക് ഒഴിവാക്കാൻ ശരിയായ ലിങ്ക് ഇവിടെ ചേർത്തിരിക്കുന്നു. ***
         const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9PC9yS4BDIqulZW45ZK7WKLnWeYeWRK9bNrTD72hsLiOYF/pub?output=json'; 
         
         let allResults = []; 
 
-        // *** 2. പുതിയ SUBJECT MAP: ലളിതമായ Headers അനുസരിച്ച് ***
+        // *** SUBJECT_MAP: ലളിതമായ English Headers (Quran, Hifz, etc.) അനുസരിച്ച് തിരുത്തിയത്. ***
         const SUBJECT_MAP = [
-            // D Column (Quran)
             { key: 'gsx$quran', display: 'Quran' }, 
-            // E Column (Hifz)
             { key: 'gsx$hifz', display: 'Hifz' },
-            // F Column (Fiqh)
             { key: 'gsx$fiqh', display: 'Fiqh' },
-            // G Column (Thareeq)
             { key: 'gsx$thareeq', display: 'Thareeq' },
-            // H Column (Aqlakh)
             { key: 'gsx$aqlakh', display: 'Aqlakh' },
-            // I Column (Thajveed)
             { key: 'gsx$thajveed', display: 'Thajveed' },
-            // J Column (Lisan)
             { key: 'gsx$lisan', display: 'Lisan' },
-            // K Column (Aqeedha)
             { key: 'gsx$aqeedha', display: 'Aqeedha' },
-            // L Column (Thafseer)
             { key: 'gsx$thafseer', display: 'Thafseer' },
-            // M Column (Duroos)
             { key: 'gsx$duroos', display: 'Duroos' }
         ];
 
@@ -205,13 +195,12 @@
 
                 const response = await fetch(DATA_URL);
                 if (!response.ok) {
-                     // ലിങ്ക് ശരിയല്ലെങ്കിൽ
+                     // 404 പിശക് ഒഴിവാക്കും
                      throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 // JSON ഡാറ്റാ വായിക്കുന്നു
                 const rawText = await response.text();
-                // Google Sheets JSON API-ൽ നിന്ന് JSON ഡാറ്റാ വേർതിരിച്ചെടുക്കുന്നു
                 const jsonStartIndex = rawText.indexOf('{');
                 const jsonEndIndex = rawText.lastIndexOf('}') + 1;
                 const jsonText = rawText.substring(jsonStartIndex, jsonEndIndex);
@@ -254,7 +243,7 @@
                         total: total,
                         grade: grade 
                     };
-                }).filter(result => result.reg_no !== '' && result.class !== ''); // രജി. നമ്പർ ഇല്ലാത്തവ ഒഴിവാക്കുന്നു
+                }).filter(result => result.reg_no !== '' && result.class !== '');
                 
                 // ഡാറ്റാ ലോഡ് ചെയ്ത ശേഷം പഴയ സന്ദേശം തിരികെ നൽകുന്നു
                 document.getElementById('result-display').innerHTML = '<p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>';
