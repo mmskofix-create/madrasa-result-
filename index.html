@@ -6,18 +6,19 @@
     <title>Madrasa Result Search</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /*  */
+        /* Manshaul Uloom Theme Variables */
         :root{
-          --navy: #0b3d91;
-          --accent: #0f5bd1;
+          --navy: #0b3d91;   /* main navy */
+          --accent: #0f5bd1; /* accent blue/button */
           --muted: #5a6476;
           --white: #ffffff;
-          --surface: #fbfdff;
+          --surface: #fbfdff; /* Background */
           --shadow: 0 6px 20px rgba(11,61,145,0.1);
           --radius: 12px;
           font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
 
+        /* General Styles */
         body {
             font-family: 'Inter', Arial, sans-serif;
             background-color: var(--surface); 
@@ -168,36 +169,33 @@
     </div>
 
     <script>
-        // *** 1. JSON ലിങ്ക് (നിങ്ങൾ ഇപ്പോൾ പബ്ലിഷ് ചെയ്ത ലിങ്ക്) ***
+        // *** 1. JSON ലിങ്ക് (നിങ്ങളുടെ Google Sheet ലിങ്ക് ഇവിടെ ചേർക്കുക) ***
         const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9PC9yS4BDIqulZW45ZK7WKLnWeYeWRK9bNrTD72hsLiOYF/pub?output=json'; 
         
         let allResults = []; 
 
-        // *** 2. പുതിയ Subject Map (നിങ്ങൾ അയച്ച Headers-ഉം JSON Key-കളും അനുസരിച്ച്) ***
-        // Subject 1 മുതൽ 10 വരെ: D മുതൽ M വരെ കോളങ്ങൾ
+        // *** 2. പുതിയ SUBJECT MAP: ലളിതമായ Headers അനുസരിച്ച് ***
         const SUBJECT_MAP = [
-            // Note: നിങ്ങളുടെ Google Sheet-ലെ അറബി പേരുകളിൽ Space (' ') ഉണ്ടെങ്കിൽ, JSON-ൽ അത് ഒഴിവാക്കിയാണ് key വരിക.
-            // gsx$alquarn എന്നതാവാം ശരി, പക്ഷെ ഇവിടെ Subject 1 എന്ന വാക്ക് ചേർത്താണ് നിങ്ങൾ ഹെഡർ കൊടുത്തത്.
-            // D Column:
-            { key: 'gsx$subject1الْقُرْآن', display: 'Subject 1 (الْقُرْآن)' }, 
-            // E Column:
-            { key: 'gsx$subject2حِفْظ', display: 'Subject 2 (حِفْظ)' },
-            // F Column:
-            { key: 'gsx$subject3فِقْه', display: 'Subject 3 (فِقْه)' },
-            // G Column:
-            { key: 'gsx$subject4تَارِيخ', display: 'Subject 4 (تَارِيخ)' },
-            // H Column:
-            { key: 'gsx$subject5أَخْلاق', display: 'Subject 5 (أَخْلاق)' },
-            // I Column:
-            { key: 'gsx$subject6تَجْوِيد', display: 'Subject 6 (تَجْوِيد)' },
-            // J Column:
-            { key: 'gsx$subject7لِسَانُالْقُرْآن', display: 'Subject 7 (لِسَانُ الْقُرْآن)' },
-            // K Column:
-            { key: 'gsx$subject8عَقِيدَة', display: 'Subject 8 (عَقِيدَة)' },
-            // L Column:
-            { key: 'gsx$subject9تَفْسِير', display: 'Subject 9 (تَفْسِير)' },
-            // M Column:
-            { key: 'gsx$subject10دُرُوسُالْإِحْسَان', display: 'Subject 10 (دُرُوسُ الْإِحْسَان)' }
+            // D Column (Quran)
+            { key: 'gsx$quran', display: 'Quran' }, 
+            // E Column (Hifz)
+            { key: 'gsx$hifz', display: 'Hifz' },
+            // F Column (Fiqh)
+            { key: 'gsx$fiqh', display: 'Fiqh' },
+            // G Column (Thareeq)
+            { key: 'gsx$thareeq', display: 'Thareeq' },
+            // H Column (Aqlakh)
+            { key: 'gsx$aqlakh', display: 'Aqlakh' },
+            // I Column (Thajveed)
+            { key: 'gsx$thajveed', display: 'Thajveed' },
+            // J Column (Lisan)
+            { key: 'gsx$lisan', display: 'Lisan' },
+            // K Column (Aqeedha)
+            { key: 'gsx$aqeedha', display: 'Aqeedha' },
+            // L Column (Thafseer)
+            { key: 'gsx$thafseer', display: 'Thafseer' },
+            // M Column (Duroos)
+            { key: 'gsx$duroos', display: 'Duroos' }
         ];
 
         async function loadData() {
@@ -207,11 +205,13 @@
 
                 const response = await fetch(DATA_URL);
                 if (!response.ok) {
+                     // ലിങ്ക് ശരിയല്ലെങ്കിൽ
                      throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 // JSON ഡാറ്റാ വായിക്കുന്നു
                 const rawText = await response.text();
+                // Google Sheets JSON API-ൽ നിന്ന് JSON ഡാറ്റാ വേർതിരിച്ചെടുക്കുന്നു
                 const jsonStartIndex = rawText.indexOf('{');
                 const jsonEndIndex = rawText.lastIndexOf('}') + 1;
                 const jsonText = rawText.substring(jsonStartIndex, jsonEndIndex);
@@ -221,21 +221,21 @@
                 allResults = data.table.rows.map(row => {
                     const cells = row.c;
                     
-                    // കോളങ്ങളുടെ Index അനുസരിച്ചാണ് വിവരങ്ങൾ എടുക്കുന്നത് (0 മുതൽ)
-                    const regNo = cells[0] && cells[0].v !== null ? String(cells[0].v).trim() : ''; // A Column
-                    const classValue = cells[1] && cells[1].v !== null ? String(cells[1].v).trim() : ''; // B Column
-                    const name = cells[2] && cells[2].v !== null ? String(cells[2].v).trim() : ''; // C Column
+                    // A, B, C കോളങ്ങൾ (Index 0, 1, 2)
+                    const regNo = cells[0] && cells[0].v !== null ? String(cells[0].v).trim() : ''; // RegNo
+                    const classValue = cells[1] && cells[1].v !== null ? String(cells[1].v).trim() : ''; // Class
+                    const name = cells[2] && cells[2].v !== null ? String(cells[2].v).trim() : ''; // Name
                     
-                    // *** തിരുത്തിയത്: TOTAL N കോളത്തിൽ (Index 13) ആണെങ്കിൽ ***
-                    const total = cells[13] && cells[13].v !== null ? cells[13].v : 0; // N Column (Index 13)
-                    // *** തിരുത്തിയത്: Grade P കോളത്തിൽ (Index 15) ആണെങ്കിൽ ***
-                    const grade = cells[15] && cells[15].v !== null ? String(cells[15].v).trim() : 'N/A'; // P Column (Index 15) 
+                    // N Column - Total (Index 13)
+                    const total = cells[13] && cells[13].v !== null ? cells[13].v : 0; 
+                    // P Column - Grade (Index 15)
+                    const grade = cells[15] && cells[15].v !== null ? String(cells[15].v).trim() : 'N/A'; 
 
                     let subjects = [];
 
-                    // 10 വിഷയങ്ങളുടെ മാർക്കുകൾ എടുക്കുന്നു (Index 3 മുതൽ 12 വരെ, അതായത് D മുതൽ M വരെ)
+                    // 10 വിഷയങ്ങൾ (Index 3 മുതൽ 12 വരെ - D മുതൽ M വരെ)
                     for (let i = 0; i < 10; i++) {
-                        const markCell = cells[i + 3]; // D Column = Index 3
+                        const markCell = cells[i + 3];
                         const mark = markCell && markCell.v !== null ? parseInt(markCell.v) : null;
                         
                         if (mark !== null && !isNaN(mark)) {
@@ -254,14 +254,14 @@
                         total: total,
                         grade: grade 
                     };
-                }).filter(result => result.reg_no !== '' && result.class !== '');
+                }).filter(result => result.reg_no !== '' && result.class !== ''); // രജി. നമ്പർ ഇല്ലാത്തവ ഒഴിവാക്കുന്നു
                 
                 // ഡാറ്റാ ലോഡ് ചെയ്ത ശേഷം പഴയ സന്ദേശം തിരികെ നൽകുന്നു
                 document.getElementById('result-display').innerHTML = '<p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>';
 
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById('result-display').innerHTML = `<p class="error">റിസൾട്ട് ഡാറ്റാ ലോഡ് ചെയ്യുന്നതിൽ പിശക്. Google Sheet-ൻ്റെ "Publish to the web" ക്രമീകരണങ്ങൾ ശരിയാണോയെന്ന് പരിശോധിക്കുക.</p>`;
+                document.getElementById('result-display').innerHTML = `<p class="error">റിസൾട്ട് ഡാറ്റാ ലോഡ് ചെയ്യുന്നതിൽ പിശക്. Google Sheet-ൻ്റെ "Publish to the web" ക്രമീകരണങ്ങളും ലിങ്കും ശരിയാണോയെന്ന് പരിശോധിക്കുക.</p>`;
             }
         }
 
@@ -286,9 +286,9 @@
                 return;
             }
 
-            // ലോഡ് ചെയ്ത ഡാറ്റയിൽ നിന്ന് തിരയുന്നു
+            // ലോഡ് ചെയ്ത ഡാറ്റയിൽ നിന്ന് തിരയുന്നു (കേസ് സെൻസിറ്റിവിറ്റി ഒഴിവാക്കി)
             const foundResult = allResults.find(data => 
-                data.reg_no.toUpperCase() === regNoInput.toUpperCase() && data.class === classNameInput
+                data.reg_no.toUpperCase() === regNoInput.toUpperCase() && data.class.toUpperCase() === classNameInput.toUpperCase()
             );
 
             if (foundResult) {
@@ -324,7 +324,7 @@
 
             } else {
                 // Result not found
-                displayArea.innerHTML = '<p class="error">ക്ഷമിക്കണം, നൽകിയ വിവരങ്ങൾ പ്രകാരം ഫലം ലഭ്യമല്ല. ഡാറ്റാ പരിശോധിക്കുക.</p>';
+                displayArea.innerHTML = '<p class="error">ക്ഷമിക്കണം, നൽകിയ വിവരങ്ങൾ പ്രകാരം ഫലം ലഭ്യമല്ല. Registration Number-ഉം Class-ഉം കൃത്യമായി നൽകിയിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.</p>';
             }
         });
     </script>
