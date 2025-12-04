@@ -169,7 +169,7 @@
     </div>
 
     <script>
-        // *** DATA_URL: 404 പിശക് ഒഴിവാക്കാൻ ശരിയായ ലിങ്ക് ഇവിടെ ചേർത്തിരിക്കുന്നു. ***
+        // *** ശരിയായ JSON ലിങ്ക് ഇവിടെ ചേർത്തിരിക്കുന്നു (ഇത് 404 പിശക് ഒഴിവാക്കും) ***
         const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9PC9yS4BDIqulZW45ZK7WKLnWeYeWRK9bNrTD72hsLiOYF/pub?output=json'; 
         
         let allResults = []; 
@@ -195,7 +195,6 @@
 
                 const response = await fetch(DATA_URL);
                 if (!response.ok) {
-                     // 404 പിശക് ഒഴിവാക്കും
                      throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
