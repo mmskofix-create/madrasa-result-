@@ -4,158 +4,320 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Madrasa Result Search</title>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Your original design kept exactly */
+        /* Manshaul Uloom Theme Variables */
+        :root{
+          --navy: #0b3d91;   /* main navy */
+          --accent: #0f5bd1; /* accent blue/button */
+          --muted: #5a6476;
+          --white: #ffffff;
+          --surface: #fbfdff; /* Background */
+          --shadow: 0 6px 20px rgba(11,61,145,0.1);
+          --radius: 12px;
+          font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* General Styles */
         body {
             font-family: 'Inter', Arial, sans-serif;
-            background-color: #fbfdff;
+            background-color: var(--surface); 
+            margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: center; 
             min-height: 100vh;
         }
         .main-container {
-            background: white;
+            background: var(--white);
             padding: 30px;
-            border-radius: 12px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow); 
             width: 100%;
             max-width: 450px;
-            box-shadow: 0 6px 20px rgba(11,61,145,0.1);
+            margin-bottom: 20px;
         }
+        
+        .logo-container {
+            text-align: center; 
+            margin-bottom: 25px; 
+        }
+        .madrasa-logo {
+            width: 100px; 
+            height: 100px;
+            object-fit: contain;
+            border-radius: 50%; 
+        }
+
         h2 {
-            text-align:center;
-            color:#0b3d91;
-            font-weight:800;
+            text-align: center;
+            color: var(--navy); 
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-weight: 800;
         }
-        input, button {
-            width:100%;
-            padding:12px;
-            margin-top:10px;
-            border-radius:6px;
-            border:1px solid #ddd;
-            font-size:16px;
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--navy); 
+            text-align: center; 
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none; 
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent);
         }
         button {
-            background:#0f5bd1;
-            color:white;
-            font-weight:bold;
-            border:none;
-            cursor:pointer;
+            width: 100%;
+            background-color: var(--accent); 
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            transition: background-color 0.3s;
         }
-        button:hover { background:#0b3d91; }
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th,td { border:1px solid #ddd; padding:8px; }
-        th { background:#0b3d91; color:white; }
-        .error { text-align:center; color:red; margin-top:15px; font-weight:bold; }
+        button:hover {
+            background-color: var(--navy); 
+        }
+
+        #result-display {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px solid rgba(11,61,145,0.2); 
+            border-radius: 8px;
+            background-color: var(--surface); 
+            text-align: left;
+        }
+        .result-info-header {
+            color: var(--accent); 
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .result-table th, .result-table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            text-align: left;
+        }
+        .result-table th {
+            background-color: var(--navy); 
+            color: white;
+            font-weight: 600;
+        }
+        .total-row td {
+            background-color: #eef6ff; 
+            font-weight: bold;
+            color: var(--navy);
+        }
+        .grade-row td {
+            background-color: #d4edda;
+            color: #155724;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
     </style>
-
 </head>
-
 <body>
 
-<div class="main-container">
-    
-    <h2>EXAM RESULT</h2>
+    <div class="main-container">
+        <div class="logo-container">
+            <img src="m.png" alt="Madrasa Logo" class="madrasa-logo">
+        </div>
+        
+        <h2>EXAM RESULT</h2>
 
-    <form id="result-form">
-        <label>Reg.No:</label>
-        <input type="text" id="reg_no" placeholder="Ex: MUMEH448209">
+        <form id="result-form">
+            <label for="reg_no">Reg.No:</label>
+            <input type="text" id="reg_no" name="reg_no" required placeholder="Ex: MUMEH448209">
+            
+            <label for="class_name">Class</label>
+            <input type="text" id="class_name" name="class_name" required placeholder="Ex: 6">
 
-        <label>Class:</label>
-        <input type="text" id="class_name" placeholder="Ex: 6">
-
-        <button type="submit">View Result</button>
-    </form>
-
-    <div id="result-display" style="margin-top:20px; text-align:center; color:#5a6476;">
-        Enter Registration Number and Class to view result.
+            <button type="submit">View Result</button>
+        </form>
+        
+        <div id="result-display">
+            <p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>
+        </div>
     </div>
 
-</div>
+    <script>
+        // *** 1. JSON ലിങ്ക് (നിങ്ങളുടെ ചിത്രത്തിൽ നിന്ന് എടുത്തത്) ***
+        const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9PC9yS4BDIqulZW45ZK7WKLnWeYeWRK9bNrTD72hsLiOYF/pub?output=json'; 
+        
+        let allResults = []; 
 
-<script>
+        // *** 2 & 3. പുതിയ Subject Map (നിങ്ങൾ അയച്ച Headers അനുസരിച്ച് തിരുത്തിയത്) ***
+        // Google Sheet Headers: Registration Number, Class, Name, الْقُرْآن, حِفْظ, ഫിഖ്‌ഹ്...
+        const SUBJECT_MAP = [
+            { key: 'gsx$الْقُرْآن', display: 'Subject 1 (الْقُرْآن)' }, 
+            { key: 'gsx$حِفْظ', display: 'Subject 2 (حِفْظ)' },
+            { key: 'gsx$فِقْه', display: 'Subject 3 (فِقْه)' }, // ഫിഖ്‌ഹ് എന്നതിന് പകരം നിങ്ങളുടെ ഷീറ്റിലെ അക്ഷരം ഫിഖ്‌ഹാണെങ്കിൽ ഇത് ഉപയോഗിക്കാം
+            { key: 'gsx$تَارِيخ', display: 'Subject 4 (تَارِيخ)' },
+            { key: 'gsx$أَخْلاق', display: 'Subject 5 (أَخْلاق)' },
+            { key: 'gsx$تَجْوِيد', display: 'Subject 6 (تَجْوِيد)' },
+            { key: 'gsx$لِسَانُالْقُرْآن', display: 'Subject 7 (لِسَانُ الْقُرْآن)' },
+            { key: 'gsx$عَقِيدَة', display: 'Subject 8 (عَقِيدَة)' },
+            { key: 'gsx$تَفْسِير', display: 'Subject 9 (تَفْسِير)' },
+            { key: 'gsx$دُرُوسُالْإِحْسَان', display: 'Subject 10 (دُرُوسُ الْإِحْسَان)' }
+            // Note: നിങ്ങളുടെ Google Sheet-ലെ അറബി പേരുകളിൽ Space (' ') ഉണ്ടെങ്കിൽ, JSON-ൽ അത് ഒഴിവാക്കിയാണ് key വരിക.
+            // ഉദാഹരണത്തിന്, 'ലയിസ് ബൈ' എന്ന് ഹെഡിങ് ഉണ്ടെങ്കിൽ key 'gsx$ലയിസ്ബൈ' എന്നാവും.
+        ];
 
-// YOUR GOOGLE SHEET JSON LINK
-const DATA_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vSQ3XJV-qjySQ0gAFjoE3v1fqq1fx5GjrKwt3CqDYK-Yo5Gj18nBm2j4x4DpclJFM13_0rpi0_46/pub?output=json";
+        async function loadData() {
+            try {
+                // ലോഡിംഗ് സന്ദേശം
+                document.getElementById('result-display').innerHTML = '<p style="text-align:center; color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> ഡാറ്റാ ലോഡ് ചെയ്യുന്നു...</p>';
 
-let allResults = [];
+                const response = await fetch(DATA_URL);
+                if (!response.ok) {
+                     // ലിങ്ക് ശരിയല്ലെങ്കിൽ
+                     throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // JSON ഡാറ്റാ വായിക്കുന്നു
+                const rawText = await response.text();
+                const jsonStartIndex = rawText.indexOf('{');
+                const jsonEndIndex = rawText.lastIndexOf('}') + 1;
+                const jsonText = rawText.substring(jsonStartIndex, jsonEndIndex);
+                const data = JSON.parse(jsonText);
 
-// Correct mapping for your Arabic headers
-const SUBJECT_MAP = [
-    { key: "gsx$subject1القرآن", display: "Subject 1 (الْقُرْآن)" },
-    { key: "gsx$subject2حفظ", display: "Subject 2 (حفظ)" },
-    { key: "gsx$subject3فقه", display: "Subject 3 (فقه)" },
-    { key: "gsx$subject4تاريخ", display: "Subject 4 (تاريخ)" },
-    { key: "gsx$subject5أخلاق", display: "Subject 5 (أخلاق)" },
-    { key: "gsx$subject6تجويد", display: "Subject 6 (تجويد)" },
-    { key: "gsx$subject7لسانالقرآن", display: "Subject 7 (لسان القرآن)" },
-    { key: "gsx$subject8عقيدة", display: "Subject 8 (عقيدة)" },
-    { key: "gsx$subject9تفسير", display: "Subject 9 (تفسير)" },
-    { key: "gsx$subject10دروسالإحسان", display: "Subject 10 (دروس الإحسان)" }
-];
+                // ഡാറ്റാ ഘടന മാറ്റി എഴുതുന്നു
+                allResults = data.table.rows.map(row => {
+                    const cells = row.c;
+                    
+                    // കോളങ്ങളുടെ Index അനുസരിച്ചാണ് വിവരങ്ങൾ എടുക്കുന്നത് (0 മുതൽ 14 വരെ).
+                    const regNo = cells[0] && cells[0].v !== null ? String(cells[0].v).trim() : ''; // A Column
+                    const classValue = cells[1] && cells[1].v !== null ? String(cells[1].v).trim() : ''; // B Column
+                    const name = cells[2] && cells[2].v !== null ? String(cells[2].v).trim() : ''; // C Column
+                    const total = cells[14] && cells[14].v !== null ? cells[14].v : 0; // O Column (Total)
+                    // P Column-ൽ Grade ഉണ്ടെങ്കിൽ അത് എടുക്കുന്നു (Index 15)
+                    const grade = cells[15] && cells[15].v !== null ? String(cells[15].v).trim() : 'N/A'; 
 
-async function loadData() {
-    const response = await fetch(DATA_URL);
-    const raw = await response.text();
-    const json = JSON.parse(raw.substring(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
+                    let subjects = [];
 
-    allResults = json.feed.entry.map(row => ({
-        reg: row.gsx$registrationnumber?.$t || "",
-        class: row.gsx$class?.$t || "",
-        name: row.gsx$name?.$t || "",
-        total: row.gsx$total?.$t || "0",
+                    // 10 വിഷയങ്ങളുടെ മാർക്കുകൾ എടുക്കുന്നു (Index 3 മുതൽ 12 വരെ, അതായത് D മുതൽ M വരെ)
+                    for (let i = 0; i < 10; i++) {
+                        const markCell = cells[i + 3];
+                        const mark = markCell && markCell.v !== null ? parseInt(markCell.v) : null;
+                        
+                        // മാർക്ക് Null അല്ലെങ്കിലോ (വിവരം ഉണ്ടെങ്കിൽ) അല്ലെങ്കിൽ NaN (നമ്പർ അല്ലെങ്കിൽ) അല്ലെങ്കിൽ subjects-ലേക്ക് ചേർക്കുന്നു.
+                        if (mark !== null && !isNaN(mark)) {
+                            subjects.push({
+                                name: SUBJECT_MAP[i].display,
+                                mark: mark
+                            });
+                        }
+                    }
 
-        subjects: SUBJECT_MAP.map(sub => ({
-            name: sub.display,
-            mark: row[sub.key]?.$t || "0"
-        }))
-    }));
-}
-loadData();
+                    return {
+                        reg_no: regNo,
+                        class: classValue, 
+                        name: name,
+                        subjects: subjects,
+                        total: total,
+                        grade: grade 
+                    };
+                }).filter(result => result.reg_no !== '' && result.class !== ''); // രജി. നമ്പർ ഇല്ലാത്തവ ഒഴിവാക്കുന്നു
+                
+                // ഡാറ്റാ ലോഡ് ചെയ്ത ശേഷം പഴയ സന്ദേശം തിരികെ നൽകുന്നു
+                document.getElementById('result-display').innerHTML = '<p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>';
 
-document.getElementById("result-form").addEventListener("submit", function(e) {
-    e.preventDefault();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('result-display').innerHTML = `<p class="error">റിസൾട്ട് ഡാറ്റാ ലോഡ് ചെയ്യുന്നതിൽ പിശക്. Google Sheet-ൻ്റെ "Publish to the web" ക്രമീകരണങ്ങൾ ശരിയാണോയെന്ന് പരിശോധിക്കുക.</p>`;
+            }
+        }
 
-    let regVal = document.getElementById("reg_no").value.trim();
-    let classVal = document.getElementById("class_name").value.trim();
-    let out = document.getElementById("result-display");
+        // പേജ് ലോഡ് ചെയ്യുമ്പോൾ ഡാറ്റ ലോഡ് ചെയ്യാൻ തുടങ്ങുന്നു
+        loadData();
 
-    if (!regVal || !classVal) {
-        out.innerHTML = `<p class='error'>Please enter both Reg.No & Class.</p>`;
-        return;
-    }
 
-    let result = allResults.find(r => 
-        r.reg.toUpperCase() === regVal.toUpperCase() &&
-        r.class === classVal
-    );
+        document.getElementById('result-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
 
-    if (!result) {
-        out.innerHTML = `<p class='error'>Result not found.</p>`;
-        return;
-    }
+            const regNoInput = document.getElementById('reg_no').value.trim();
+            const classNameInput = document.getElementById('class_name').value.trim();
+            const displayArea = document.getElementById('result-display');
+            
+            if (allResults.length === 0) {
+                 displayArea.innerHTML = '<p class="error">ഡാറ്റാ ഇതുവരെ ലോഡ് ചെയ്തിട്ടില്ല. അല്പം കാത്തിരിക്കുക.</p>';
+                 return;
+            }
 
-    out.innerHTML = `
-        <h3 style='color:#0f5bd1;'>${result.name}</h3>
-        <p><b>Reg.No:</b> ${result.reg} | <b>Class:</b> ${result.class}</p>
+            if (!regNoInput || !classNameInput) {
+                displayArea.innerHTML = '<p class="error">Registration Number-ഉം Class-ഉം നിർബന്ധമായും നൽകുക.</p>';
+                return;
+            }
 
-        <table>
-            <tr><th>Subject</th><th>Mark</th></tr>
-            ${result.subjects.map(s => `
-                <tr><td>${s.name}</td><td>${s.mark}</td></tr>
-            `).join("")}
+            // ലോഡ് ചെയ്ത ഡാറ്റയിൽ നിന്ന് തിരയുന്നു
+            const foundResult = allResults.find(data => 
+                data.reg_no.toUpperCase() === regNoInput.toUpperCase() && data.class === classNameInput
+            );
 
-            <tr style='background:#e6f0ff; font-weight:bold;'>
-                <td>Total</td><td>${result.total}</td>
-            </tr>
-        </table>
-    `;
-});
+            if (foundResult) {
+                // Result found
+                let htmlContent = `
+                    <span class="result-info-header">Result Details:</span>
+                    <p><strong>Name:</strong> ${foundResult.name}</p>
+                    <p><strong>Registration No:</strong> ${foundResult.reg_no}</p>
+                    <p><strong>Class:</strong> ${foundResult.class}</p>
 
-</script>
+                    <table class="result-table">
+                        <tr>
+                            <th>വിഷയം</th>
+                            <th>മാർക്ക്</th>
+                        </tr>
+                        ${foundResult.subjects.map(sub => `
+                            <tr>
+                                <td>${sub.name}</td>
+                                <td>${sub.mark}</td>
+                            </tr>
+                        `).join('')}
+                        <tr class="total-row">
+                            <td style="text-align:right;"><strong>ആകെ മാർക്ക്:</strong></td>
+                            <td><strong>${foundResult.total}</strong></td>
+                        </tr>
+                        <tr class="grade-row">
+                            <td style="text-align:right;"><strong>ഗ്രേഡ്:</strong></td>
+                            <td><strong>${foundResult.grade}</strong></td>
+                        </tr>
+                    </table>
+                `;
+                displayArea.innerHTML = htmlContent;
 
+            } else {
+                // Result not found
+                displayArea.innerHTML = '<p class="error">ക്ഷമിക്കണം, നൽകിയ വിവരങ്ങൾ പ്രകാരം ഫലം ലഭ്യമല്ല. ഡാറ്റാ പരിശോധിക്കുക.</p>';
+            }
+        });
+    </script>
 </body>
 </html>
