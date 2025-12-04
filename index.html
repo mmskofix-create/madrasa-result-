@@ -3,111 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madrasa Result</title>
+    <title>Madrasa Result Search</title>
 
     <style>
-        body { font-family: Arial, sans-serif; background:#f0f4ff; padding:20px; }
-        .box { background:white; padding:25px; max-width:450px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align:center; color:#003c8f; margin-bottom:20px; }
-        input, button {
-            width:100%; padding:12px; margin-top:10px;
-            border-radius:6px; border:1px solid #ccc; font-size:16px;
+        /* Your original design kept exactly */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #fbfdff;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        button { background:#0066ff; color:white; border:none; font-size:18px; cursor:pointer; }
-        button:hover { background:#004ccc; }
+        .main-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 6px 20px rgba(11,61,145,0.1);
+        }
+        h2 {
+            text-align:center;
+            color:#0b3d91;
+            font-weight:800;
+        }
+        input, button {
+            width:100%;
+            padding:12px;
+            margin-top:10px;
+            border-radius:6px;
+            border:1px solid #ddd;
+            font-size:16px;
+        }
+        button {
+            background:#0f5bd1;
+            color:white;
+            font-weight:bold;
+            border:none;
+            cursor:pointer;
+        }
+        button:hover { background:#0b3d91; }
         table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th,td { border:1px solid #ddd; padding:8px; font-size:14px; }
-        th { background:#003c8f; color:white; }
-        .error { color:red; text-align:center; margin-top:15px; font-weight:bold; }
+        th,td { border:1px solid #ddd; padding:8px; }
+        th { background:#0b3d91; color:white; }
+        .error { text-align:center; color:red; margin-top:15px; font-weight:bold; }
     </style>
+
 </head>
+
 <body>
 
-<div class="box">
+<div class="main-container">
+    
     <h2>EXAM RESULT</h2>
 
-    <label>Registration Number</label>
-    <input type="text" id="reg">
+    <form id="result-form">
+        <label>Reg.No:</label>
+        <input type="text" id="reg_no" placeholder="Ex: MUMEH448209">
 
-    <label>Class</label>
-    <input type="text" id="cls">
+        <label>Class:</label>
+        <input type="text" id="class_name" placeholder="Ex: 6">
 
-    <button onclick="findResult()">View Result</button>
+        <button type="submit">View Result</button>
+    </form>
 
-    <div id="output"></div>
+    <div id="result-display" style="margin-top:20px; text-align:center; color:#5a6476;">
+        Enter Registration Number and Class to view result.
+    </div>
+
 </div>
 
 <script>
 
-const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQ3XJV-qjySQ0gAFjoE3v1fqq1fx5GjrKwt3CqDYK-Yo5Gj18nBm2j4x4DpclJFM13_0rpi0_46/pub?output=json";
+// YOUR GOOGLE SHEET JSON LINK
+const DATA_URL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vSQ3XJV-qjySQ0gAFjoE3v1fqq1fx5GjrKwt3CqDYK-Yo5Gj18nBm2j4x4DpclJFM13_0rpi0_46/pub?output=json";
 
-let results = [];
+let allResults = [];
 
-// ----------- Load Google Sheet JSON -------------
+// Correct mapping for your Arabic headers
+const SUBJECT_MAP = [
+    { key: "gsx$subject1القرآن", display: "Subject 1 (الْقُرْآن)" },
+    { key: "gsx$subject2حفظ", display: "Subject 2 (حفظ)" },
+    { key: "gsx$subject3فقه", display: "Subject 3 (فقه)" },
+    { key: "gsx$subject4تاريخ", display: "Subject 4 (تاريخ)" },
+    { key: "gsx$subject5أخلاق", display: "Subject 5 (أخلاق)" },
+    { key: "gsx$subject6تجويد", display: "Subject 6 (تجويد)" },
+    { key: "gsx$subject7لسانالقرآن", display: "Subject 7 (لسان القرآن)" },
+    { key: "gsx$subject8عقيدة", display: "Subject 8 (عقيدة)" },
+    { key: "gsx$subject9تفسير", display: "Subject 9 (تفسير)" },
+    { key: "gsx$subject10دروسالإحسان", display: "Subject 10 (دروس الإحسان)" }
+];
+
 async function loadData() {
-    const res = await fetch(DATA_URL);
-    const raw = await res.text();
+    const response = await fetch(DATA_URL);
+    const raw = await response.text();
     const json = JSON.parse(raw.substring(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
 
-    results = json.feed.entry.map(r => ({
-        reg: r.gsx$registrationnumber?.$t || "",
-        class: r.gsx$class?.$t || "",
-        name: r.gsx$name?.$t || "",
-        subjects: [
-            { name:"Subject 1 (الْقُرْآن)",       mark:r.gsx$subject1القرآن?.$t || "0" },
-            { name:"Subject 2 (حِفْظ)",          mark:r.gsx$subject2حفظ?.$t || "0" },
-            { name:"Subject 3 (فِقْه)",          mark:r.gsx$subject3فقه?.$t || "0" },
-            { name:"Subject 4 (تَارِيخ)",        mark:r.gsx$subject4تاريخ?.$t || "0" },
-            { name:"Subject 5 (أَخْلاق)",        mark:r.gsx$subject5أخلاق?.$t || "0" },
-            { name:"Subject 6 (تَجْوِيد)",       mark:r.gsx$subject6تجويد?.$t || "0" },
-            { name:"Subject 7 (لِسَانُ الْقُرْآن)", mark:r.gsx$subject7لسانالقرآن?.$t || "0" },
-            { name:"Subject 8 (عَقِيدَة)",       mark:r.gsx$subject8عقيدة?.$t || "0" },
-            { name:"Subject 9 (تَفْسِير)",       mark:r.gsx$subject9تفسير?.$t || "0" },
-            { name:"Subject 10 (دُرُوسُ الْإِحْسَان)", mark:r.gsx$subject10دروسالإحسان?.$t || "0" }
-        ],
-        total: r.gsx$total?.$t || "0"
+    allResults = json.feed.entry.map(row => ({
+        reg: row.gsx$registrationnumber?.$t || "",
+        class: row.gsx$class?.$t || "",
+        name: row.gsx$name?.$t || "",
+        total: row.gsx$total?.$t || "0",
+
+        subjects: SUBJECT_MAP.map(sub => ({
+            name: sub.display,
+            mark: row[sub.key]?.$t || "0"
+        }))
     }));
 }
-
 loadData();
 
-// ---------------- FIND RESULT ----------------
-function findResult() {
-    let reg = document.getElementById("reg").value.trim();
-    let cls = document.getElementById("cls").value.trim();
-    let out = document.getElementById("output");
+document.getElementById("result-form").addEventListener("submit", function(e) {
+    e.preventDefault();
 
-    if (!reg || !cls) {
-        out.innerHTML = `<p class="error">Enter Registration & Class</p>`;
+    let regVal = document.getElementById("reg_no").value.trim();
+    let classVal = document.getElementById("class_name").value.trim();
+    let out = document.getElementById("result-display");
+
+    if (!regVal || !classVal) {
+        out.innerHTML = `<p class='error'>Please enter both Reg.No & Class.</p>`;
         return;
     }
 
-    const r = results.find(x => x.reg.toUpperCase() === reg.toUpperCase() && x.class === cls);
+    let result = allResults.find(r => 
+        r.reg.toUpperCase() === regVal.toUpperCase() &&
+        r.class === classVal
+    );
 
-    if (!r) {
-        out.innerHTML = `<p class="error">Result Not Found</p>`;
+    if (!result) {
+        out.innerHTML = `<p class='error'>Result not found.</p>`;
         return;
     }
 
-    let table = `
-        <h3>Name: ${r.name}</h3>
-        <h4>Reg: ${r.reg} | Class: ${r.class}</h4>
+    out.innerHTML = `
+        <h3 style='color:#0f5bd1;'>${result.name}</h3>
+        <p><b>Reg.No:</b> ${result.reg} | <b>Class:</b> ${result.class}</p>
 
         <table>
             <tr><th>Subject</th><th>Mark</th></tr>
-            ${r.subjects.map(s => `
-            <tr><td>${s.name}</td><td>${s.mark}</td></tr>
+            ${result.subjects.map(s => `
+                <tr><td>${s.name}</td><td>${s.mark}</td></tr>
             `).join("")}
-            <tr style="background:#e6f0ff;">
-                <td><b>Total</b></td>
-                <td><b>${r.total}</b></td>
+
+            <tr style='background:#e6f0ff; font-weight:bold;'>
+                <td>Total</td><td>${result.total}</td>
             </tr>
         </table>
     `;
-
-    out.innerHTML = table;
-}
+});
 
 </script>
+
 </body>
 </html>
