@@ -169,152 +169,104 @@
     </div>
 
     <script>
-        // *** ശരിയായ JSON ലിങ്ക് ഇവിടെ ചേർത്തിരിക്കുന്നു (ഇത് 404 പിശക് ഒഴിവാക്കും) ***
-        const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9PC9yS4BDIqulZW45ZK7WKLnWeYeWRK9bNrTD72hsLiOYF/pub?output=json'; 
-        
-        let allResults = []; 
+        /* --- YOUR UPDATED WORKING GOOGLE SHEET JSON URL --- */
+        const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv';
 
-        // *** SUBJECT_MAP: ലളിതമായ English Headers (Quran, Hifz, etc.) അനുസരിച്ച് തിരുത്തിയത്. ***
-        const SUBJECT_MAP = [
-            { key: 'gsx$quran', display: 'Quran' }, 
-            { key: 'gsx$hifz', display: 'Hifz' },
-            { key: 'gsx$fiqh', display: 'Fiqh' },
-            { key: 'gsx$thareeq', display: 'Thareeq' },
-            { key: 'gsx$aqlakh', display: 'Aqlakh' },
-            { key: 'gsx$thajveed', display: 'Thajveed' },
-            { key: 'gsx$lisan', display: 'Lisan' },
-            { key: 'gsx$aqeedha', display: 'Aqeedha' },
-            { key: 'gsx$thafseer', display: 'Thafseer' },
-            { key: 'gsx$duroos', display: 'Duroos' }
+        let allResults = [];
+
+        const SUBJECT_NAMES = [
+            "Quran","Hifz","Fiqh","Thareeq","Aqlakh",
+            "Thajveed","Lisan","Aqeedha","Thafseer","Duroos"
         ];
 
         async function loadData() {
             try {
-                // ലോഡിംഗ് സന്ദേശം
-                document.getElementById('result-display').innerHTML = '<p style="text-align:center; color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> ഡാറ്റാ ലോഡ് ചെയ്യുന്നു...</p>';
+                document.getElementById("result-display").innerHTML =
+                    '<p style="text-align:center;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
 
-                const response = await fetch(DATA_URL);
-                if (!response.ok) {
-                     throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                // JSON ഡാറ്റാ വായിക്കുന്നു
-                const rawText = await response.text();
-                const jsonStartIndex = rawText.indexOf('{');
-                const jsonEndIndex = rawText.lastIndexOf('}') + 1;
-                const jsonText = rawText.substring(jsonStartIndex, jsonEndIndex);
-                const data = JSON.parse(jsonText);
+                const res = await fetch(DATA_URL);
+                const text = await res.text();
 
-                // ഡാറ്റാ ഘടന മാറ്റി എഴുതുന്നു
-                allResults = data.table.rows.map(row => {
-                    const cells = row.c;
-                    
-                    // A, B, C കോളങ്ങൾ (Index 0, 1, 2)
-                    const regNo = cells[0] && cells[0].v !== null ? String(cells[0].v).trim() : ''; // RegNo
-                    const classValue = cells[1] && cells[1].v !== null ? String(cells[1].v).trim() : ''; // Class
-                    const name = cells[2] && cells[2].v !== null ? String(cells[2].v).trim() : ''; // Name
-                    
-                    // N Column - Total (Index 13)
-                    const total = cells[13] && cells[13].v !== null ? cells[13].v : 0; 
-                    // P Column - Grade (Index 15)
-                    const grade = cells[15] && cells[15].v !== null ? String(cells[15].v).trim() : 'N/A'; 
+                const rows = text.trim().split("\n").map(r => r.split("\t"));
 
+                const header = rows[0];
+                const dataRows = rows.slice(1);
+
+                allResults = dataRows.map(r => {
                     let subjects = [];
-
-                    // 10 വിഷയങ്ങൾ (Index 3 മുതൽ 12 വരെ - D മുതൽ M വരെ)
-                    for (let i = 0; i < 10; i++) {
-                        const markCell = cells[i + 3];
-                        const mark = markCell && markCell.v !== null ? parseInt(markCell.v) : null;
-                        
-                        if (mark !== null && !isNaN(mark)) {
-                            subjects.push({
-                                name: SUBJECT_MAP[i].display,
-                                mark: mark
-                            });
-                        }
+                    for (let i = 3; i < 13; i++) {
+                        subjects.push({
+                            name: SUBJECT_NAMES[i - 3],
+                            mark: r[i] || "-"
+                        });
                     }
 
                     return {
-                        reg_no: regNo,
-                        class: classValue, 
-                        name: name,
+                        reg_no: r[0],
+                        class: r[1],
+                        name: r[2],
                         subjects: subjects,
-                        total: total,
-                        grade: grade 
+                        total: r[13],
+                        grade: r[15]
                     };
-                }).filter(result => result.reg_no !== '' && result.class !== '');
-                
-                // ഡാറ്റാ ലോഡ് ചെയ്ത ശേഷം പഴയ സന്ദേശം തിരികെ നൽകുന്നു
-                document.getElementById('result-display').innerHTML = '<p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>';
+                });
 
-            } catch (error) {
-                console.error("Error loading data:", error);
-                document.getElementById('result-display').innerHTML = `<p class="error">റിസൾട്ട് ഡാറ്റാ ലോഡ് ചെയ്യുന്നതിൽ പിശക്. Google Sheet-ൻ്റെ "Publish to the web" ക്രമീകരണങ്ങളും ലിങ്കും ശരിയാണോയെന്ന് പരിശോധിക്കുക.</p>`;
+                document.getElementById("result-display").innerHTML =
+                    '<p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>';
+
+            } catch (err) {
+                document.getElementById("result-display").innerHTML =
+                    '<p class="error">Error loading data!</p>';
             }
         }
 
-        // പേജ് ലോഡ് ചെയ്യുമ്പോൾ ഡാറ്റ ലോഡ് ചെയ്യാൻ തുടങ്ങുന്നു
         loadData();
 
+        document.getElementById('result-form').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        document.getElementById('result-form').addEventListener('submit', function(event) {
-            event.preventDefault(); 
+            const reg = document.getElementById('reg_no').value.trim().toUpperCase();
+            const cls = document.getElementById('class_name').value.trim();
 
-            const regNoInput = document.getElementById('reg_no').value.trim();
-            const classNameInput = document.getElementById('class_name').value.trim();
-            const displayArea = document.getElementById('result-display');
-            
-            if (allResults.length === 0) {
-                 displayArea.innerHTML = '<p class="error">ഡാറ്റാ ഇതുവരെ ലോഡ് ചെയ്തിട്ടില്ല. അല്പം കാത്തിരിക്കുക.</p>';
-                 return;
-            }
+            const result = allResults.find(r => r.reg_no.toUpperCase() === reg && r.class === cls);
 
-            if (!regNoInput || !classNameInput) {
-                displayArea.innerHTML = '<p class="error">Registration Number-ഉം Class-ഉം നിർബന്ധമായും നൽകുക.</p>';
+            if (!result) {
+                document.getElementById('result-display').innerHTML =
+                    '<p class="error">No result found!</p>';
                 return;
             }
 
-            // ലോഡ് ചെയ്ത ഡാറ്റയിൽ നിന്ന് തിരയുന്നു (കേസ് സെൻസിറ്റിവിറ്റി ഒഴിവാക്കി)
-            const foundResult = allResults.find(data => 
-                data.reg_no.toUpperCase() === regNoInput.toUpperCase() && data.class.toUpperCase() === classNameInput.toUpperCase()
-            );
+            let tableRows = result.subjects.map(sub => `
+                <tr>
+                    <td>${sub.name}</td>
+                    <td>${sub.mark}</td>
+                </tr>`
+            ).join("");
 
-            if (foundResult) {
-                // Result found
-                let htmlContent = `
-                    <span class="result-info-header">Result Details:</span>
-                    <p><strong>Name:</strong> ${foundResult.name}</p>
-                    <p><strong>Registration No:</strong> ${foundResult.reg_no}</p>
-                    <p><strong>Class:</strong> ${foundResult.class}</p>
+            document.getElementById('result-display').innerHTML = `
+                <span class="result-info-header">Result Details:</span>
+                <p><strong>Name:</strong> ${result.name}</p>
+                <p><strong>Registration No:</strong> ${result.reg_no}</p>
+                <p><strong>Class:</strong> ${result.class}</p>
 
-                    <table class="result-table">
-                        <tr>
-                            <th>വിഷയം</th>
-                            <th>മാർക്ക്</th>
-                        </tr>
-                        ${foundResult.subjects.map(sub => `
-                            <tr>
-                                <td>${sub.name}</td>
-                                <td>${sub.mark}</td>
-                            </tr>
-                        `).join('')}
-                        <tr class="total-row">
-                            <td style="text-align:right;"><strong>ആകെ മാർക്ക്:</strong></td>
-                            <td><strong>${foundResult.total}</strong></td>
-                        </tr>
-                        <tr class="grade-row">
-                            <td style="text-align:right;"><strong>ഗ്രേഡ്:</strong></td>
-                            <td><strong>${foundResult.grade}</strong></td>
-                        </tr>
-                    </table>
-                `;
-                displayArea.innerHTML = htmlContent;
-
-            } else {
-                // Result not found
-                displayArea.innerHTML = '<p class="error">ക്ഷമിക്കണം, നൽകിയ വിവരങ്ങൾ പ്രകാരം ഫലം ലഭ്യമല്ല. Registration Number-ഉം Class-ഉം കൃത്യമായി നൽകിയിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.</p>';
-            }
+                <table class="result-table">
+                    <tr>
+                        <th>Subject</th>
+                        <th>Mark</th>
+                    </tr>
+                    ${tableRows}
+                    <tr class="total-row">
+                        <td style="text-align:right;"><strong>Total:</strong></td>
+                        <td><strong>${result.total}</strong></td>
+                    </tr>
+                    <tr class="grade-row">
+                        <td style="text-align:right;"><strong>Grade:</strong></td>
+                        <td><strong>${result.grade}</strong></td>
+                    </tr>
+                </table>
+            `;
         });
     </script>
+
 </body>
 </html>
