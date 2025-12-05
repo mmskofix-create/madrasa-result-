@@ -1,248 +1,251 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Manshaul Uloom — Result</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <style>
-        :root{
-          --navy: #0b3d91;
-          --accent: #0f5bd1;
-          --muted: #6b7280;
-          --white: #ffffff;
-          --surface: #f6f9ff;
-          --shadow: 0 8px 30px rgba(11,61,145,0.08);
-          --radius: 14px;
-        }
-
-        *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;}
-
-        body{
-          margin:0;
-          background:var(--surface);
-          padding:20px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          min-height:100vh;
-          text-align:center; /* everything center */
-        }
-
-        .main-container{
-          width:95%;
-          max-width:440px; /* Slim clean width */
-          background:var(--white);
-          border-radius:var(--radius);
-          padding:28px;
-          box-shadow:var(--shadow);
-        }
-
-        .logo-wrap{text-align:center;margin-bottom:15px;}
-        .madrasa-logo{width:110px;height:110px;border-radius:50%;object-fit:contain;}
-
-        h1{ color:var(--navy); margin:4px 0 10px; font-size:22px; letter-spacing:1px; }
-        p.lead{ color:var(--muted); margin:0 0 18px; }
-
-        label{ display:block; font-weight:600; color:var(--navy); margin-bottom:6px; text-align:center; }
-
-        input[type="text"]{
-          width:100%; padding:12px 14px; border-radius:8px; border:1px solid #e6edf8;
-          margin-bottom:14px; font-size:15px; text-align:center;
-        }
-
-        button.primary{
-          width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px;
-          border: none; font-weight:700; font-size:16px; cursor:pointer;
-        }
-        button.primary:hover{ background:var(--navy); }
-
-        #result-display{
-          margin-top:18px;
-          padding:18px;
-          border-radius:10px;
-          border:1px solid rgba(11,61,145,0.08);
-          background:white; 
-          min-height:120px;
-        }
-
-        .result-table{
-          width:100%;
-          border-collapse:collapse;
-          margin-top:12px;
-          background: rgba(255,255,255,0.98);
-        }
-        .result-table th, .result-table td{
-          border:1px solid #e5e7eb;
-          padding:10px 8px;
-          text-align:center; /* center table */
-          font-size:14px;
-        }
-        .result-table th{ background:var(--navy); color:white; font-weight:600; }
-        .total-row td{ background:#e6f2ff; font-weight:700; }
-        .grade-row td{ background:#d4edda; font-weight:700; }
-
-        .error{ color:#dc3545; font-weight:700; padding:12px 0; }
-
-        #pdf-btn{
-          display:none;
-          margin-top:14px;
-          background:#0a7f07;
-          color:white;
-          padding:12px;
-          border-radius:8px;
-          width:100%;
-          border:none;
-          font-weight:700;
-          cursor:pointer;
-        }
-    </style>
-</head>
-<body>
-
-  <div class="main-container">
-    <div class="logo-wrap">
-      <img src="m.png" alt="Manshaul Logo" class="madrasa-logo">
-    </div>
-
-    <h1>EXAM RESULT</h1>
-
-    <form id="result-form">
-      <label for="reg_no"></label>
-      <input id="reg_no" type="text" placeholder="reg.no">
-
-      <label for="class_name"></label>
-      <input id="class_name" type="text" placeholder="class">
-
-      <button class="primary" type="submit">View Result</button>
-    </form>
-
-    <div id="result-display">
-      <p style="color:var(--muted);padding-top:18px;">Enter Registration Number and Class to view the result.</p>
-    </div>
-
-    <button id="pdf-btn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
-  </div>
-
-  <!-- libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <script>
-
-    const DATA_URL = 
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv";
-
-    const WATERMARK_IMG = "m.png";  // watermark for PDF
-    const SEAL_IMG = "m.png";   // seal image for PDF
-
-    const SUBJECTS = ["Quran","Hifz","Fiqh","Thareeq","Aqlakh","Thajveed","Lisan","Aqeedha","Thafseer","Duroos"];
-
-    let allResults = [];
-
-    async function loadData(){
-      const res = await fetch(DATA_URL);
-      const txt = await res.text();
-      const rows = txt.split("\n").map(r => r.split("\t")).slice(1);
-
-      allResults = rows.map(r=>{
-        return {
-          reg: r[0],
-          class: r[1],
-          name: r[2],
-          subjects: SUBJECTS.map((s,i)=>({name:s,mark:r[i+3]})),
-          total: r[13],
-          grade: r[15]
-        };
-      });
-    }
-
-    loadData();
-
-
-    document.getElementById("result-form").addEventListener("submit", function(e){
-      e.preventDefault();
-
-      const reg = document.getElementById("reg_no").value.trim().toUpperCase();
-      const cls = document.getElementById("class_name").value.trim();
-
-      const found = allResults.find(x => x.reg.toUpperCase() === reg && x.class === cls);
-      const box = document.getElementById("result-display");
-
-      if(!found){
-        box.innerHTML = `<p class='error'>No Result Found</p>`;
-        document.getElementById("pdf-btn").style.display="none";
-        return;
-      }
-
-      let rows = found.subjects.map(s=>`
-        <tr><td>${s.name}</td><td>${s.mark}</td></tr>
-      `).join("");
-
-      box.innerHTML = `
-        <h2 style="color:#0b3d91;">MANSHAUL ULOOM MADRASA</h2>
-        <h4 style="color:#444;">Annual Examination Result – 2024</h4>
-
-        <p><strong>Name:</strong> ${found.name}</p>
-        <p><strong>Reg.No:</strong> ${found.reg}</p>
-        <p><strong>Class:</strong> ${found.class}</p>
-
-        <table class="result-table">
-          <tr><th>Subject</th><th>Mark</th></tr>
-          ${rows}
-          <tr class="total-row"><td>Total</td><td>${found.total}</td></tr>
-          <tr class="grade-row"><td>Grade</td><td>${found.grade}</td></tr>
-        </table>
-
-        <div style="margin-top:34px;">
-          <img src="${SEAL_IMG}" width="90" style="opacity:0.9;">
-          <div style="width:180px;border-top:2px solid #000;margin:25px auto 0;"></div>
-        </div>
-      `;
-
-      document.getElementById("pdf-btn").style.display="block";
-    });
-
-
-
-    document.getElementById("pdf-btn").addEventListener("click", async function(){
-      const { jsPDF } = window.jspdf;
-      const box = document.getElementById("result-display");
-
-      const prevBg = box.style.background;
-      const prevImg = box.style.backgroundImage;
-
-      box.style.background = `white url('${WATERMARK_IMG}') no-repeat center`;
-      box.style.backgroundSize = "280px";
-      box.style.backgroundPosition = "center 30px";
-
-      await new Promise(res=>setTimeout(res,80));
-
-      const canvas = await html2canvas(box,{scale:3});
-      const img = canvas.toDataURL("image/png");
-
-      box.style.background = prevBg;
-      box.style.backgroundImage = prevImg;
-
-      const pdf = new jsPDF("p","mm","a4");
-      let w = pdf.internal.pageSize.getWidth();
-      let h = pdf.internal.pageSize.getHeight();
-
-      pdf.setLineWidth(3);
-      pdf.setDrawColor(0,70,180);
-      pdf.rect(6,6,w-12,h-12);
-
-      let imgW = w - 20;
-      let imgH = canvas.height * imgW / canvas.width;
-
-      pdf.addImage(img,"PNG",10,18,imgW,imgH);
-
-      pdf.save("Result.pdf");
-    });
-
-  </script>
-
-</body>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8" />  
+    <meta name="viewport" content="width=device-width,initial-scale=1" />  
+    <title>Manshaul Uloom — Result</title>  
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">  
+  
+    <style>  
+        :root{  
+          --navy: #0b3d91;  
+          --accent: #0f5bd1;  
+          --muted: #6b7280;  
+          --white: #ffffff;  
+          --surface: #f6f9ff;  
+          --shadow: 0 8px 30px rgba(11,61,145,0.08);  
+          --radius: 14px;  
+        }  
+  
+        *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;}  
+  
+        body{  
+          margin:0;  
+          background:var(--surface);  
+          padding:20px;  
+          display:flex;  
+          align-items:center;  
+          justify-content:center;  
+          min-height:100vh;  
+          text-align:center;  
+        }  
+  
+        .main-container{  
+          width:95%;  
+          max-width:440px;  
+          background:var(--white);  
+          border-radius:var(--radius);  
+          padding:28px;  
+          box-shadow:var(--shadow);  
+        }  
+  
+        .logo-wrap{text-align:center;margin-bottom:15px;}  
+        .madrasa-logo{width:110px;height:110px;border-radius:50%;object-fit:contain;}  
+  
+        h1{ color:var(--navy); margin:4px 0 10px; font-size:22px; letter-spacing:1px; }  
+        p.lead{ color:var(--muted); margin:0 0 18px; }  
+  
+        label{ display:block; font-weight:600; color:var(--navy); margin-bottom:6px; }  
+  
+        input[type="text"]{  
+          width:100%; padding:12px 14px; border-radius:8px; border:1px solid #e6edf8;  
+          margin-bottom:14px; font-size:15px; text-align:center;  
+        }  
+  
+        button.primary{  
+          width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px;  
+          border: none; font-weight:700; font-size:16px; cursor:pointer;  
+        }  
+        button.primary:hover{ background:var(--navy); }  
+  
+        #result-display{  
+          margin-top:18px;  
+          padding:18px;  
+          border-radius:10px;  
+          border:1px solid rgba(11,61,145,0.08);  
+          background:white;   
+          min-height:120px;  
+        }  
+  
+        .result-table{  
+          width:100%;  
+          border-collapse:collapse;  
+          margin-top:12px;  
+        }  
+        .result-table th, .result-table td{  
+          border:1px solid #e5e7eb;  
+          padding:10px 8px;  
+          text-align:center;  
+          font-size:14px;  
+        }  
+        .result-table th{ background:var(--navy); color:white; font-weight:600; }  
+        .total-row td{ background:#e6f2ff; font-weight:700; }  
+        .grade-row td{ background:#d4edda; font-weight:700; }  
+  
+        .error{ color:#dc3545; font-weight:700; padding:12px 0; }  
+  
+        #pdf-btn{  
+          display:none;  
+          margin-top:14px;  
+          background:#0a7f07;  
+          color:white;  
+          padding:12px;  
+          border-radius:8px;  
+          width:100%;  
+          border:none;  
+          font-weight:700;  
+          cursor:pointer;  
+        }  
+    </style>  
+</head>  
+<body>  
+  
+  <div class="main-container">  
+    <div class="logo-wrap">  
+      <img src="m.png" alt="Manshaul Logo" class="madrasa-logo">  
+    </div>  
+  
+    <h1>EXAM RESULT</h1>  
+  
+    <form id="result-form">  
+      <label for="reg_no"></label>  
+      <input id="reg_no" type="text" placeholder="reg.no">  
+  
+      <label for="class_name"></label>  
+      <input id="class_name" type="text" placeholder="class">  
+  
+      <button class="primary" type="submit">View Result</button>  
+    </form>  
+  
+    <div id="result-display">  
+      <p style="color:var(--muted);padding-top:18px;">Enter Registration Number and Class to view the result.</p>  
+    </div>  
+  
+    <button id="pdf-btn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>  
+  </div>  
+  
+  <!-- libs -->  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
+  
+  <script>  
+  
+    const DATA_URL =   
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv";  
+  
+    const WATERMARK_IMG = "m.png";  
+    const SEAL_IMG = "m.png";  
+  
+    const SUBJECTS = ["Quran","Hifz","Fiqh","Thareeq","Aqlakh","Thajveed","Lisan","Aqeedha","Thafseer","Duroos"];  
+  
+    let allResults = [];  
+  
+    async function loadData(){  
+      const res = await fetch(DATA_URL);  
+      const txt = await res.text();  
+      const rows = txt.split("\n").map(r => r.split("\t")).slice(1);  
+  
+      allResults = rows.map(r=>{  
+        return {  
+          reg: r[0],  
+          class: r[1],  
+          name: r[2],  
+          subjects: SUBJECTS.map((s,i)=>({name:s,mark:r[i+3]})),  
+          total: r[13],  
+          grade: r[15]  
+        };  
+      });  
+    }  
+  
+    loadData();  
+  
+  
+    document.getElementById("result-form").addEventListener("submit", function(e){  
+      e.preventDefault();  
+  
+      const reg = document.getElementById("reg_no").value.trim().toUpperCase();  
+      const cls = document.getElementById("class_name").value.trim();  
+  
+      const found = allResults.find(x => x.reg.toUpperCase() === reg && x.class === cls);  
+      const box = document.getElementById("result-display");  
+  
+      if(!found){  
+        box.innerHTML = `<p class='error'>No Result Found</p>`;  
+        document.getElementById("pdf-btn").style.display="none";  
+        return;  
+      }  
+  
+      let rows = found.subjects.map(s=>`  
+        <tr><td>${s.name}</td><td>${s.mark}</td></tr>  
+      `).join("");  
+  
+      box.innerHTML = `  
+        <h2 style="color:#0b3d91;">MANSHAUL ULOOM MADRASA</h2>  
+        <h4 style="color:#444;">Annual Examination Result – 2024</h4>  
+  
+        <p><strong>Name:</strong> ${found.name}</p>  
+        <p><strong>Reg.No:</strong> ${found.reg}</p>  
+        <p><strong>Class:</strong> ${found.class}</p>  
+  
+        <table class="result-table">  
+          <tr><th>Subject</th><th>Mark</th></tr>  
+          ${rows}  
+          <tr class="total-row"><td>Total</td><td>${found.total}</td></tr>  
+          <tr class="grade-row"><td>Grade</td><td>${found.grade}</td></tr>  
+        </table>  
+  
+        <div style="margin-top:34px;">  
+          <img src="${SEAL_IMG}" width="90" style="opacity:0.9;">  
+          <div style="width:180px;border-top:2px solid #000;margin:25px auto 0;"></div>  
+        </div>  
+      `;  
+  
+      document.getElementById("pdf-btn").style.display="block";  
+    });  
+  
+  
+    /*  
+    =============================  
+        FIXED PDF GENERATOR  
+    =============================  
+    */  
+    document.getElementById("pdf-btn").addEventListener("click", async function(){  
+        const { jsPDF } = window.jspdf;  
+        const box = document.getElementById("result-display");  
+      
+        const prevBg = box.style.background;  
+        const prevImg = box.style.backgroundImage;  
+      
+        box.style.background = `white url('${WATERMARK_IMG}') no-repeat center`;  
+        box.style.backgroundSize = "280px";  
+        box.style.backgroundPosition = "center 40px";  
+      
+        await new Promise(res=>setTimeout(res,150));  
+      
+        const canvas = await html2canvas(box,{scale:3});  
+        const img = canvas.toDataURL("image/png");  
+      
+        box.style.background = prevBg;  
+        box.style.backgroundImage = prevImg;  
+      
+        const pdf = new jsPDF("p","mm","a4");  
+        let w = pdf.internal.pageSize.getWidth();  
+        let h = pdf.internal.pageSize.getHeight();  
+      
+        pdf.setLineWidth(3);  
+        pdf.setDrawColor(0,70,180);  
+        pdf.rect(6,6,w-12,h-12);  
+      
+        let imgW = w - 20;  
+        let imgH = canvas.height * imgW / canvas.width;  
+      
+        pdf.addImage(img,"PNG",10,15,imgW,imgH);  
+      
+        pdf.save("Result.pdf");  
+    });  
+  
+  </script>  
+  
+</body>  
 </html>
