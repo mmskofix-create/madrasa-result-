@@ -1,272 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madrasa Result Search</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Manshaul Uloom — Result</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        /* Manshaul Uloom Theme Variables */
         :root{
           --navy: #0b3d91;
           --accent: #0f5bd1;
-          --muted: #5a6476;
+          --muted: #6b7280;
           --white: #ffffff;
-          --surface: #fbfdff;
-          --shadow: 0 6px 20px rgba(11,61,145,0.1);
-          --radius: 12px;
-          font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+          --surface: #f6f9ff;
+          --shadow: 0 8px 30px rgba(11,61,145,0.08);
+          --radius: 14px;
         }
 
-        /* General Styles */
-        body {
-            font-family: 'Inter', Arial, sans-serif;
-            background-color: var(--surface); 
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center; 
-            min-height: 100vh;
-        }
-        .main-container {
-            background: var(--white);
-            padding: 30px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow); 
-            width: 100%;
-            max-width: 450px;
-            margin-bottom: 20px;
-        }
-        
-        .logo-container {
-            text-align: center; 
-            margin-bottom: 25px; 
-        }
-        .madrasa-logo {
-            width: 100px; 
-            height: 100px;
-            object-fit: contain;
-            border-radius: 50%; 
+        *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;}
+
+        body{
+          margin:0;
+          background:var(--surface);
+          padding:20px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          min-height:100vh;
+          text-align:center; /* everything center */
         }
 
-        h2 {
-            text-align: center;
-            color: var(--navy); 
-            padding-bottom: 15px;
-            margin-top: 0;
-            font-weight: 800;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--navy); 
-            text-align: center; 
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            outline: none; 
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: var(--accent);
-        }
-        button {
-            width: 100%;
-            background-color: var(--accent); 
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 700;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: var(--navy); 
+        .main-container{
+          width:95%;
+          max-width:440px; /* Slim clean width */
+          background:var(--white);
+          border-radius:var(--radius);
+          padding:28px;
+          box-shadow:var(--shadow);
         }
 
-        #result-display {
-            margin-top: 25px;
-            padding: 20px;
-            border: 1px solid rgba(11,61,145,0.2); 
-            border-radius: 8px;
-            background-color: var(--surface); 
-            text-align: left;
+        .logo-wrap{text-align:center;margin-bottom:15px;}
+        .madrasa-logo{width:110px;height:110px;border-radius:50%;object-fit:contain;}
+
+        h1{ color:var(--navy); margin:4px 0 10px; font-size:22px; letter-spacing:1px; }
+        p.lead{ color:var(--muted); margin:0 0 18px; }
+
+        label{ display:block; font-weight:600; color:var(--navy); margin-bottom:6px; text-align:center; }
+
+        input[type="text"]{
+          width:100%; padding:12px 14px; border-radius:8px; border:1px solid #e6edf8;
+          margin-bottom:14px; font-size:15px; text-align:center;
         }
-        .result-info-header {
-            color: var(--accent); 
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
+
+        button.primary{
+          width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px;
+          border: none; font-weight:700; font-size:16px; cursor:pointer;
         }
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        button.primary:hover{ background:var(--navy); }
+
+        #result-display{
+          margin-top:18px;
+          padding:18px;
+          border-radius:10px;
+          border:1px solid rgba(11,61,145,0.08);
+          background:white; 
+          min-height:120px;
         }
-        .result-table th, .result-table td {
-            border: 1px solid #e0e0e0;
-            padding: 10px;
-            text-align: left;
+
+        .result-table{
+          width:100%;
+          border-collapse:collapse;
+          margin-top:12px;
+          background: rgba(255,255,255,0.98);
         }
-        .result-table th {
-            background-color: var(--navy); 
-            color: white;
-            font-weight: 600;
+        .result-table th, .result-table td{
+          border:1px solid #e5e7eb;
+          padding:10px 8px;
+          text-align:center; /* center table */
+          font-size:14px;
         }
-        .total-row td {
-            background-color: #eef6ff; 
-            font-weight: bold;
-            color: var(--navy);
-        }
-        .grade-row td {
-            background-color: #d4edda;
-            color: #155724;
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-        .error {
-            color: #dc3545;
-            font-weight: bold;
-            text-align: center;
-            padding: 10px;
+        .result-table th{ background:var(--navy); color:white; font-weight:600; }
+        .total-row td{ background:#e6f2ff; font-weight:700; }
+        .grade-row td{ background:#d4edda; font-weight:700; }
+
+        .error{ color:#dc3545; font-weight:700; padding:12px 0; }
+
+        #pdf-btn{
+          display:none;
+          margin-top:14px;
+          background:#0a7f07;
+          color:white;
+          padding:12px;
+          border-radius:8px;
+          width:100%;
+          border:none;
+          font-weight:700;
+          cursor:pointer;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="logo-container">
-            <img src="m.png" alt="Madrasa Logo" class="madrasa-logo">
-        </div>
-        
-        <h2>EXAM RESULT</h2>
-
-        <form id="result-form">
-            <label for="reg_no">Reg.No:</label>
-            <input type="text" id="reg_no" name="reg_no" required placeholder="Ex: MUMEH448209">
-            
-            <label for="class_name">Class</label>
-            <input type="text" id="class_name" name="class_name" required placeholder="Ex: 6">
-
-            <button type="submit">View Result</button>
-        </form>
-        
-        <div id="result-display">
-            <p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>
-        </div>
+  <div class="main-container">
+    <div class="logo-wrap">
+      <img src="m.png" alt="Manshaul Logo" class="madrasa-logo">
     </div>
 
-    <script>
-        /* --- YOUR UPDATED WORKING GOOGLE SHEET JSON URL --- */
-        const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv';
+    <h1>EXAM RESULT</h1>
 
-        let allResults = [];
+    <form id="result-form">
+      <label for="reg_no"></label>
+      <input id="reg_no" type="text" placeholder="reg.no">
 
-        const SUBJECT_NAMES = [
-            "Quran","Hifz","Fiqh","Thareeq","Aqlakh",
-            "Thajveed","Lisan","Aqeedha","Thafseer","Duroos"
-        ];
+      <label for="class_name"></label>
+      <input id="class_name" type="text" placeholder="class">
 
-        async function loadData() {
-            try {
-                document.getElementById("result-display").innerHTML =
-                    '<p style="text-align:center;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
+      <button class="primary" type="submit">View Result</button>
+    </form>
 
-                const res = await fetch(DATA_URL);
-                const text = await res.text();
+    <div id="result-display">
+      <p style="color:var(--muted);padding-top:18px;">Enter Registration Number and Class to view the result.</p>
+    </div>
 
-                const rows = text.trim().split("\n").map(r => r.split("\t"));
+    <button id="pdf-btn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+  </div>
 
-                const header = rows[0];
-                const dataRows = rows.slice(1);
+  <!-- libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-                allResults = dataRows.map(r => {
-                    let subjects = [];
-                    for (let i = 3; i < 13; i++) {
-                        subjects.push({
-                            name: SUBJECT_NAMES[i - 3],
-                            mark: r[i] || "-"
-                        });
-                    }
+  <script>
 
-                    return {
-                        reg_no: r[0],
-                        class: r[1],
-                        name: r[2],
-                        subjects: subjects,
-                        total: r[13],
-                        grade: r[15]
-                    };
-                });
+    const DATA_URL = 
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv";
 
-                document.getElementById("result-display").innerHTML =
-                    '<p style="text-align:center; color:var(--muted);">Enter Registration Number and Class to view result.</p>';
+    const WATERMARK_IMG = "m.png";  // watermark for PDF
+    const SEAL_IMG = "m.png";   // seal image for PDF
 
-            } catch (err) {
-                document.getElementById("result-display").innerHTML =
-                    '<p class="error">Error loading data!</p>';
-            }
-        }
+    const SUBJECTS = ["Quran","Hifz","Fiqh","Thareeq","Aqlakh","Thajveed","Lisan","Aqeedha","Thafseer","Duroos"];
 
-        loadData();
+    let allResults = [];
 
-        document.getElementById('result-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+    async function loadData(){
+      const res = await fetch(DATA_URL);
+      const txt = await res.text();
+      const rows = txt.split("\n").map(r => r.split("\t")).slice(1);
 
-            const reg = document.getElementById('reg_no').value.trim().toUpperCase();
-            const cls = document.getElementById('class_name').value.trim();
+      allResults = rows.map(r=>{
+        return {
+          reg: r[0],
+          class: r[1],
+          name: r[2],
+          subjects: SUBJECTS.map((s,i)=>({name:s,mark:r[i+3]})),
+          total: r[13],
+          grade: r[15]
+        };
+      });
+    }
 
-            const result = allResults.find(r => r.reg_no.toUpperCase() === reg && r.class === cls);
+    loadData();
 
-            if (!result) {
-                document.getElementById('result-display').innerHTML =
-                    '<p class="error">No result found!</p>';
-                return;
-            }
 
-            let tableRows = result.subjects.map(sub => `
-                <tr>
-                    <td>${sub.name}</td>
-                    <td>${sub.mark}</td>
-                </tr>`
-            ).join("");
+    document.getElementById("result-form").addEventListener("submit", function(e){
+      e.preventDefault();
 
-            document.getElementById('result-display').innerHTML = `
-                <span class="result-info-header">Result Details:</span>
-                <p><strong>Name:</strong> ${result.name}</p>
-                <p><strong>Registration No:</strong> ${result.reg_no}</p>
-                <p><strong>Class:</strong> ${result.class}</p>
+      const reg = document.getElementById("reg_no").value.trim().toUpperCase();
+      const cls = document.getElementById("class_name").value.trim();
 
-                <table class="result-table">
-                    <tr>
-                        <th>Subject</th>
-                        <th>Mark</th>
-                    </tr>
-                    ${tableRows}
-                    <tr class="total-row">
-                        <td style="text-align:right;"><strong>Total:</strong></td>
-                        <td><strong>${result.total}</strong></td>
-                    </tr>
-                    <tr class="grade-row">
-                        <td style="text-align:right;"><strong>Grade:</strong></td>
-                        <td><strong>${result.grade}</strong></td>
-                    </tr>
-                </table>
-            `;
-        });
-    </script>
+      const found = allResults.find(x => x.reg.toUpperCase() === reg && x.class === cls);
+      const box = document.getElementById("result-display");
+
+      if(!found){
+        box.innerHTML = `<p class='error'>No Result Found</p>`;
+        document.getElementById("pdf-btn").style.display="none";
+        return;
+      }
+
+      let rows = found.subjects.map(s=>`
+        <tr><td>${s.name}</td><td>${s.mark}</td></tr>
+      `).join("");
+
+      box.innerHTML = `
+        <h2 style="color:#0b3d91;">MANSHAUL ULOOM MADRASA</h2>
+        <h4 style="color:#444;">Annual Examination Result – 2024</h4>
+
+        <p><strong>Name:</strong> ${found.name}</p>
+        <p><strong>Reg.No:</strong> ${found.reg}</p>
+        <p><strong>Class:</strong> ${found.class}</p>
+
+        <table class="result-table">
+          <tr><th>Subject</th><th>Mark</th></tr>
+          ${rows}
+          <tr class="total-row"><td>Total</td><td>${found.total}</td></tr>
+          <tr class="grade-row"><td>Grade</td><td>${found.grade}</td></tr>
+        </table>
+
+        <div style="margin-top:34px;">
+          <img src="${SEAL_IMG}" width="90" style="opacity:0.9;">
+          <div style="width:180px;border-top:2px solid #000;margin:25px auto 0;"></div>
+        </div>
+      `;
+
+      document.getElementById("pdf-btn").style.display="block";
+    });
+
+
+
+    document.getElementById("pdf-btn").addEventListener("click", async function(){
+      const { jsPDF } = window.jspdf;
+      const box = document.getElementById("result-display");
+
+      const prevBg = box.style.background;
+      const prevImg = box.style.backgroundImage;
+
+      box.style.background = `white url('${WATERMARK_IMG}') no-repeat center`;
+      box.style.backgroundSize = "280px";
+      box.style.backgroundPosition = "center 30px";
+
+      await new Promise(res=>setTimeout(res,80));
+
+      const canvas = await html2canvas(box,{scale:3});
+      const img = canvas.toDataURL("image/png");
+
+      box.style.background = prevBg;
+      box.style.backgroundImage = prevImg;
+
+      const pdf = new jsPDF("p","mm","a4");
+      let w = pdf.internal.pageSize.getWidth();
+      let h = pdf.internal.pageSize.getHeight();
+
+      pdf.setLineWidth(3);
+      pdf.setDrawColor(0,70,180);
+      pdf.rect(6,6,w-12,h-12);
+
+      let imgW = w - 20;
+      let imgH = canvas.height * imgW / canvas.width;
+
+      pdf.addImage(img,"PNG",10,18,imgW,imgH);
+
+      pdf.save("Result.pdf");
+    });
+
+  </script>
 
 </body>
 </html>
