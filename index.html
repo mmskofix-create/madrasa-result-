@@ -125,7 +125,6 @@
     <button id="pdf-btn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>  
   </div>  
   
-  <!-- libs -->  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
   
@@ -160,14 +159,15 @@
   
     loadData();  
   
-  
     document.getElementById("result-form").addEventListener("submit", function(e){  
       e.preventDefault();  
   
       const reg = document.getElementById("reg_no").value.trim().toUpperCase();  
-      const cls = document.getElementById("class_name").value.trim();  
+      // ക്ലാസ് നാമം കൂടി uppercase ആക്കുന്നു (Case Sensitivity പരിഹരിക്കാൻ)
+      const cls = document.getElementById("class_name").value.trim().toUpperCase();  
   
-      const found = allResults.find(x => x.reg.toUpperCase() === reg && x.class === cls);  
+      // താരതമ്യം ചെയ്യുമ്പോൾ ക്ലാസ് നാമം uppercase ആക്കുന്നു
+      const found = allResults.find(x => x.reg.toUpperCase() === reg && x.class.toUpperCase() === cls);  
       const box = document.getElementById("result-display");  
   
       if(!found){  
@@ -205,38 +205,37 @@
     });  
   
   
-    /*  
-    =============================  
-        FIXED PDF GENERATOR  
-    =============================  
+    /* ==================================================  
+        പരിഷ്കരിച്ച PDF ജനറേറ്റർ (വാട്ടർമാർക്ക് പ്രശ്നം പരിഹരിച്ചു)  
+        * html2canvas എടുക്കുന്നതിനു മുൻപുള്ള background സെറ്റിംഗ് ഒഴിവാക്കി.
+        * jspdf ഉപയോഗിച്ച് opacity കുറച്ച് വാട്ടർമാർക്ക് റിസൾട്ടിന് പിന്നിൽ ചേർക്കുന്നു.
+    ==================================================  
     */  
     document.getElementById("pdf-btn").addEventListener("click", async function(){  
         const { jsPDF } = window.jspdf;  
         const box = document.getElementById("result-display");  
       
-        const prevBg = box.style.background;  
-        const prevImg = box.style.backgroundImage;  
-      
-        box.style.background = `white url('${WATERMARK_IMG}') no-repeat center`;  
-        box.style.backgroundSize = "280px";  
-        box.style.backgroundPosition = "center 40px";  
-      
-        await new Promise(res=>setTimeout(res,150));  
+        // html2canvas എടുക്കുന്നതിനു മുൻപ് പശ്ചാത്തല വാട്ടർമാർക്ക് സജ്ജമാക്കുന്ന ഭാഗം ഒഴിവാക്കി.
       
         const canvas = await html2canvas(box,{scale:3});  
         const img = canvas.toDataURL("image/png");  
-      
-        box.style.background = prevBg;  
-        box.style.backgroundImage = prevImg;  
       
         const pdf = new jsPDF("p","mm","a4");  
         let w = pdf.internal.pageSize.getWidth();  
         let h = pdf.internal.pageSize.getHeight();  
       
+        // 1. വാട്ടർമാർക്ക് ചിത്രം ചേർക്കുന്നു (റിസൾട്ട് ഇമേജിന് പിന്നിൽ വരാൻ)
+        // സുതാര്യത (opacity) 0.15 ആയി കുറയ്ക്കുന്നു.
+        const opacity = 0.15; 
+        const watermarkSize = 100; // വാട്ടർമാർക്കിൻ്റെ വലിപ്പം mm-ൽ
+        pdf.addImage(WATERMARK_IMG, "PNG", w/2 - (watermarkSize/2), h/2 - (watermarkSize/2), watermarkSize, watermarkSize, undefined, "NONE", opacity); 
+        
+        // 2. പേജ് ബോർഡർ ചേർക്കുന്നു
         pdf.setLineWidth(3);  
         pdf.setDrawColor(0,70,180);  
         pdf.rect(6,6,w-12,h-12);  
       
+        // 3. html2canvas-ൽ നിന്ന് ലഭിച്ച റിസൾട്ട് ഇമേജ് ചേർക്കുന്നു
         let imgW = w - 20;  
         let imgH = canvas.height * imgW / canvas.width;  
       
