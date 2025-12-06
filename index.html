@@ -220,7 +220,7 @@
         const canvas = await html2canvas(box,{scale:3});  
         const img = canvas.toDataURL("image/png");  
       
-        const pdf = new jsPDF("p","mm","a4");  
+        const pdf = new jsPDF("p","mm","a3");  
         let w = pdf.internal.pageSize.getWidth();  
         let h = pdf.internal.pageSize.getHeight();  
       
