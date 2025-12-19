@@ -97,6 +97,11 @@
           font-weight:700;  
           cursor:pointer;  
         }  
+
+        .loading {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
     </style>  
 </head>  
 <body>  
@@ -134,13 +139,11 @@
     const DATA_URL =   
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv";  
   
-    const WATERMARK_IMG = "m.png";  
-    const SEAL_IMG = "m.png";  
-  
     const SUBJECTS = ["Quran","Hifz","Fiqh","Thareeq","Aqlakh","Thajveed","Lisan","Aqeedha","Thafseer","Duroos"];  
   
     let allResults = [];  
-  
+    let currentResult = null;
+
     async function loadData(){  
       const res = await fetch(DATA_URL);  
       const txt = await res.text();  
@@ -173,8 +176,11 @@
       if(!found){  
         box.innerHTML = `<p class='error'>No Result Found</p>`;  
         document.getElementById("pdf-btn").style.display="none";  
+        currentResult = null;
         return;  
       }  
+
+      currentResult = found;
   
       let rows = found.subjects.map(s=>`  
         <tr><td>${s.name}</td><td>${s.mark}</td></tr>  
@@ -194,7 +200,6 @@
           <tr class="total-row"><td>Total</td><td>${found.total}</td></tr>  
           <tr class="grade-row"><td>Grade</td><td>${found.grade}</td></tr>  
         </table>  
-        </div>  
       `;  
   
       document.getElementById("pdf-btn").style.display="block";  
@@ -203,36 +208,94 @@
   
     /*  
     =============================  
-        PERFECT FIT A4 PDF GENERATOR  
+        OPTIMIZED PDF GENERATOR (SMALL FILE SIZE)  
     =============================  
     */  
     document.getElementById("pdf-btn").addEventListener("click", async function(){  
-        const { jsPDF } = window.jspdf;  
-        const box = document.getElementById("result-display");  
-      
-        const canvas = await html2canvas(box,{scale:3});  
-        const img = canvas.toDataURL("image/png");  
-      
-        const pdf = new jsPDF("l", "mm", "a4");  
-        let pageW = pdf.internal.pageSize.getWidth();  
-        let pageH = pdf.internal.pageSize.getHeight();  
-      
-        let imgW = pageW - 20;  
-        let imgH = canvas.height * imgW / canvas.width;  
-      
-        if (imgH > pageH - 20) {
-          imgH = pageH - 20;
-          imgW = canvas.width * imgH / canvas.height;
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        // Show loading state
+        btn.classList.add('loading');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
+        btn.disabled = true;
+        
+        try {
+            const { jsPDF } = window.jspdf;  
+            const box = document.getElementById("result-display");  
+          
+            // OPTIMIZED html2canvas settings for smaller file size
+            const canvas = await html2canvas(box, {
+                scale: 1.5, // Reduced from 3 to 1.5 (50% smaller)
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                logging: false,
+                imageTimeout: 0,
+                removeContainer: true,
+                allowTaint: false,
+                foreignObjectRendering: false, // Smaller file size
+                quality: 0.92, // Reduced quality slightly
+                width: box.offsetWidth,
+                height: box.offsetHeight,
+                windowWidth: box.scrollWidth,
+                windowHeight: box.scrollHeight
+            });  
+          
+            // Convert to lower quality JPEG for smaller size (instead of PNG)
+            const img = canvas.toDataURL("image/jpeg", 0.85);  
+          
+            const pdf = new jsPDF("p", "mm", "a4");  
+            let pageW = pdf.internal.pageSize.getWidth();  
+            let pageH = pdf.internal.pageSize.getHeight();  
+          
+            // Calculate image dimensions with proper margins
+            const margin = 15;
+            const maxWidth = pageW - (2 * margin);
+            const maxHeight = pageH - (2 * margin);
+            
+            let imgW = maxWidth;
+            let imgH = (canvas.height * imgW) / canvas.width;
+            
+            // Adjust if image is too tall
+            if (imgH > maxHeight) {
+                imgH = maxHeight;
+                imgW = (canvas.width * imgH) / canvas.height;
+            }
+          
+            // Add decorative border (optional - can remove to save space)
+            pdf.setLineWidth(1); // Thinner line
+            pdf.setDrawColor(11, 61, 145);  
+            pdf.rect(margin/2, margin/2, pageW - margin, pageH - margin);  
+          
+            // Center the image
+            let x = (pageW - imgW) / 2;
+            let y = (pageH - imgH) / 2;
+          
+            // Use JPEG compression
+            pdf.addImage(img, "JPEG", x, y, imgW, imgH, "", "MEDIUM");  
+          
+            // Add minimal footer text
+            pdf.setFontSize(8); // Smaller font
+            pdf.setTextColor(107, 114, 128);
+            pdf.text("Manshaul Uloom Madrasa - Result 2024", pageW/2, pageH - 8, {align: "center"});
+            
+            // Generate filename with student name
+            let fileName = "Result.pdf";
+            if (currentResult) {
+                const cleanName = currentResult.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+                fileName = `${cleanName}_Result.pdf`; // Shorter filename
+            }
+          
+            pdf.save(fileName);  
+        } catch (error) {
+            console.error("PDF generation error:", error);
+            alert("Error generating PDF. Please try again.");
+        } finally {
+            // Restore button state
+            btn.classList.remove('loading');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
-      
-        pdf.setLineWidth(3);  
-        pdf.setDrawColor(0, 70, 180);  
-        pdf.rect(6, 6, pageW - 12, pageH - 12);  
-      
-        let x = (pageW - imgW) / 2;
-        pdf.addImage(img,"PNG",x,15,imgW,imgH);  
-      
-        pdf.save("Result.pdf");  
     });  
   
   </script>  
