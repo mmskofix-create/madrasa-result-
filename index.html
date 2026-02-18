@@ -1,304 +1,45 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width,initial-scale=1" />  
-    <title>Manshaul Uloom — Result</title>  
-  
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">  
-  
-    <style>  
-        :root{  
-          --navy: #0b3d91;  
-          --accent: #0f5bd1;  
-          --muted: #6b7280;  
-          --white: #ffffff;  
-          --surface: #f6f9ff;  
-          --shadow: 0 8px 30px rgba(11,61,145,0.08);  
-          --radius: 14px;  
-        }  
-  
-        *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;}  
-  
-        body{  
-          margin:0;  
-          background:var(--surface);  
-          padding:20px;  
-          display:flex;  
-          align-items:center;  
-          justify-content:center;  
-          min-height:100vh;  
-          text-align:center;  
-        }  
-  
-        .main-container{  
-          width:95%;  
-          max-width:440px;  
-          background:var(--white);  
-          border-radius:var(--radius);  
-          padding:28px;  
-          box-shadow:var(--shadow);  
-        }  
-  
-        .logo-wrap{text-align:center;margin-bottom:15px;}  
-        .madrasa-logo{width:110px;height:110px;border-radius:50%;object-fit:contain;}  
-  
-        h1{ color:var(--navy); margin:4px 0 10px; font-size:22px; letter-spacing:1px; }  
-        p.lead{ color:var(--muted); margin:0 0 18px; }  
-  
-        label{ display:block; font-weight:600; color:var(--navy); margin-bottom:6px; }  
-  
-        input[type="text"]{  
-          width:100%; padding:12px 14px; border-radius:8px; border:1px solid #e6edf8;  
-          margin-bottom:14px; font-size:15px; text-align:center;  
-        }  
-  
-        button.primary{  
-          width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px;  
-          border: none; font-weight:700; font-size:16px; cursor:pointer;  
-        }  
-        button.primary:hover{ background:var(--navy); }  
-  
-        #result-display{  
-          margin-top:18px;  
-          padding:18px;  
-          border-radius:10px;  
-          border:1px solid rgba(11,61,145,0.08);  
-          background:white;   
-          min-height:120px;  
-        }  
-  
-        .result-table{  
-          width:100%;  
-          border-collapse:collapse;  
-          margin-top:12px;  
-        }  
-        .result-table th, .result-table td{  
-          border:1px solid #e5e7eb;  
-          padding:10px 8px;  
-          text-align:center;  
-          font-size:14px;  
-        }  
-        .result-table th{ background:var(--navy); color:white; font-weight:600; }  
-        .total-row td{ background:#e6f2ff; font-weight:700; }  
-        .grade-row td{ background:#d4edda; font-weight:700; }  
-  
-        .error{ color:#dc3545; font-weight:700; padding:12px 0; }  
-  
-        #pdf-btn{  
-          display:none;  
-          margin-top:14px;  
-          background:#0a7f07;  
-          color:white;  
-          padding:12px;  
-          border-radius:8px;  
-          width:100%;  
-          border:none;  
-          font-weight:700;  
-          cursor:pointer;  
-        }  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Manshaul Uloom — Result</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-        .loading {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-    </style>  
-</head>  
-<body>  
-  
-  <div class="main-container">  
-    <div class="logo-wrap">  
-      <img src="m.png" alt="Manshaul Logo" class="madrasa-logo">  
-    </div>  
-  
-    <h1>EXAM RESULT</h1>  
-  
-    <form id="result-form">  
-      <label for="reg_no"></label>  
-      <input id="reg_no" type="text" placeholder="reg.no">  
-  
-      <label for="class_name"></label>  
-      <input id="class_name" type="text" placeholder="class">  
-  
-      <button class="primary" type="submit">View Result</button>  
-    </form>  
-  
-    <div id="result-display">  
-      <p style="color:var(--muted);padding-top:18px;">Enter Registration Number and Class to view the result.</p>  
-    </div>  
-  
-    <button id="pdf-btn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>  
-  </div>  
-  
-  <!-- libs -->  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
-  
-  <script>  
-  
-    const DATA_URL =   
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJu-EDpFYXABL3Be-S-9QTqkWici-5xo9Pc9yS4BDlqulZW45ZK7WKLnWeYeWRk9bNrTD72hsLiOYF/pub?output=tsv";  
-  
-    const SUBJECTS = ["Quran","Hifz","Fiqh","Thareeq","Aqlakh","Thajveed","Lisan","Aqeedha","Thafseer","Duroos"];  
-  
-    let allResults = [];  
-    let currentResult = null;
+    <div class="main-container">
+        <div class="logo-wrap">
+            <img src="m.png" alt="Manshaul Logo" class="madrasa-logo">
+        </div>
 
-    async function loadData(){  
-      const res = await fetch(DATA_URL);  
-      const txt = await res.text();  
-      const rows = txt.split("\n").map(r => r.split("\t")).slice(1);  
-  
-      allResults = rows.map(r=>{  
-        return {  
-          reg: r[0],  
-          class: r[1],  
-          name: r[2],  
-          subjects: SUBJECTS.map((s,i)=>({name:s,mark:r[i+3]})),  
-          total: r[13],  
-          grade: r[15]  
-        };  
-      });  
-    }  
-  
-    loadData();  
-  
-  
-    document.getElementById("result-form").addEventListener("submit", function(e){  
-      e.preventDefault();  
-  
-      const reg = document.getElementById("reg_no").value.trim().toUpperCase();  
-      const cls = document.getElementById("class_name").value.trim().toUpperCase();  
-  
-      const found = allResults.find(x => x.reg.toUpperCase() === reg && x.class.toUpperCase() === cls);  
-      const box = document.getElementById("result-display");  
-  
-      if(!found){  
-        box.innerHTML = `<p class='error'>No Result Found</p>`;  
-        document.getElementById("pdf-btn").style.display="none";  
-        currentResult = null;
-        return;  
-      }  
+        <h1>EXAM RESULT</h1>
 
-      currentResult = found;
-  
-      let rows = found.subjects.map(s=>`  
-        <tr><td>${s.name}</td><td>${s.mark}</td></tr>  
-      `).join("");  
-  
-      box.innerHTML = `  
-        <h2 style="color:#0b3d91;">MANSHAUL ULOOM MADRASA</h2>  
-        <h4 style="color:#444;">Annual Model Examination Result – 2025/26</h4>  
-  
-        <p><strong>Name:</strong> ${found.name}</p>  
-        <p><strong>Reg.No:</strong> ${found.reg}</p>  
-        <p><strong>Class:</strong> ${found.class}</p>  
-  
-        <table class="result-table">  
-          <tr><th>Subject</th><th>Mark</th></tr>  
-          ${rows}  
-          <tr class="total-row"><td>Total</td><td>${found.total}</td></tr>  
-          <tr class="grade-row"><td>Grade</td><td>${found.grade}</td></tr>  
-        </table>  
-      `;  
-  
-      document.getElementById("pdf-btn").style.display="block";  
-    });  
-  
-  
-    /*  
-    =============================  
-        OPTIMIZED PDF GENERATOR (SMALL FILE SIZE)  
-    =============================  
-    */  
-    document.getElementById("pdf-btn").addEventListener("click", async function(){  
-        const btn = this;
-        const originalText = btn.innerHTML;
-        
-        // Show loading state
-        btn.classList.add('loading');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
-        btn.disabled = true;
-        
-        try {
-            const { jsPDF } = window.jspdf;  
-            const box = document.getElementById("result-display");  
-          
-            // OPTIMIZED html2canvas settings for smaller file size
-            const canvas = await html2canvas(box, {
-                scale: 1.5, // Reduced from 3 to 1.5 (50% smaller)
-                useCORS: true,
-                backgroundColor: "#ffffff",
-                logging: false,
-                imageTimeout: 0,
-                removeContainer: true,
-                allowTaint: false,
-                foreignObjectRendering: false, // Smaller file size
-                quality: 0.92, // Reduced quality slightly
-                width: box.offsetWidth,
-                height: box.offsetHeight,
-                windowWidth: box.scrollWidth,
-                windowHeight: box.scrollHeight
-            });  
-          
-            // Convert to lower quality JPEG for smaller size (instead of PNG)
-            const img = canvas.toDataURL("image/jpeg", 0.85);  
-          
-            const pdf = new jsPDF("p", "mm", "a4");  
-            let pageW = pdf.internal.pageSize.getWidth();  
-            let pageH = pdf.internal.pageSize.getHeight();  
-          
-            // Calculate image dimensions with proper margins
-            const margin = 15;
-            const maxWidth = pageW - (2 * margin);
-            const maxHeight = pageH - (2 * margin);
-            
-            let imgW = maxWidth;
-            let imgH = (canvas.height * imgW) / canvas.width;
-            
-            // Adjust if image is too tall
-            if (imgH > maxHeight) {
-                imgH = maxHeight;
-                imgW = (canvas.width * imgH) / canvas.height;
-            }
-          
-            // Add decorative border (optional - can remove to save space)
-            pdf.setLineWidth(1); // Thinner line
-            pdf.setDrawColor(11, 61, 145);  
-            pdf.rect(margin/2, margin/2, pageW - margin, pageH - margin);  
-          
-            // Center the image
-            let x = (pageW - imgW) / 2;
-            let y = (pageH - imgH) / 2;
-          
-            // Use JPEG compression
-            pdf.addImage(img, "JPEG", x, y, imgW, imgH, "", "MEDIUM");  
-          
-            // Add minimal footer text
-            pdf.setFontSize(8); // Smaller font
-            pdf.setTextColor(107, 114, 128);
-            pdf.text("Manshaul Uloom Madrasa - Result 2024", pageW/2, pageH - 8, {align: "center"});
-            
-            // Generate filename with student name
-            let fileName = "Result.pdf";
-            if (currentResult) {
-                const cleanName = currentResult.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
-                fileName = `${cleanName}_Result.pdf`; // Shorter filename
-            }
-          
-            pdf.save(fileName);  
-        } catch (error) {
-            console.error("PDF generation error:", error);
-            alert("Error generating PDF. Please try again.");
-        } finally {
-            // Restore button state
-            btn.classList.remove('loading');
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    });  
-  
-  </script>  
-  
-</body>  
+        <form id="result-form">
+            <label for="reg_no"></label>
+            <input id="reg_no" type="text" placeholder="reg.no">
+
+            <label for="class_name"></label>
+            <input id="class_name" type="text" placeholder="class">
+
+            <button class="primary" type="submit">View Result</button>
+        </form>
+
+        <div id="result-display" class="result-card-wrap">
+            <div id="default-msg">
+                <p style="color:var(--muted);padding-top:18px;">Enter Registration Number and Class to view the result.</p>
+            </div>
+        </div>
+
+        <button id="pdf-btn"><i class="fa-solid fa-image"></i> Download JPG</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script src="script.js"></script>
+</body>
 </html>
